@@ -44,15 +44,22 @@ img{display:block;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:
 .reel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .reel::-webkit-scrollbar{display:none}
 .slide{flex:0 0 100%;scroll-snap-align:start;position:relative;height:clamp(440px,66vh,720px);overflow:hidden;cursor:pointer;text-align:left;display:block;width:100%;color:inherit}
-.slide .ghost{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(84px,17vw,230px);line-height:.9;color:transparent;-webkit-text-stroke:1px rgba(224,54,60,.55);white-space:nowrap;pointer-events:none}
-.slide .halo{position:absolute;left:50%;top:50%;width:min(68vh,74vw);height:min(68vh,74vw);transform:translate(-50%,-50%);background:radial-gradient(closest-side,var(--glow),transparent);pointer-events:none}
+.ghost{position:absolute;left:0;right:0;top:44%;transform:translateY(-50%);overflow:hidden;font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(92px,18vw,250px);line-height:1.15;color:transparent;-webkit-text-stroke:1.25px rgba(224,54,60,.72);white-space:nowrap;pointer-events:none}
+.ghost .run{display:inline-block}
+.ghost span{display:inline-block;padding-right:.1em}
+.ghost em{display:inline-block;width:.09em;height:.09em;margin:0 .4em 0 .3em;background:rgba(224,54,60,.72);transform:rotate(45deg);vertical-align:.24em;-webkit-text-stroke:0}
+@media(prefers-reduced-motion:no-preference){.ghost .run{animation:run var(--s,20s) linear infinite}}
+@keyframes run{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.slide .halo{position:absolute;left:50%;top:44%;width:min(78vh,84vw);height:min(78vh,84vw);transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(255,255,255,.2),rgba(224,54,60,.07) 55%,transparent);pointer-events:none}
+@media(prefers-reduced-motion:no-preference){.slide .halo,.view .pic .halo{animation:pulse 5s ease-in-out infinite alternate}}
+@keyframes pulse{from{opacity:.85;transform:translate(-50%,-50%) scale(.98)}to{opacity:1;transform:translate(-50%,-50%) scale(1.02)}}
 .slide .wwrap{position:absolute;left:0;right:0;top:44%;height:92%;transform:translate(-50%,-50%);margin-left:50%;width:100%;filter:drop-shadow(0 18px 40px rgba(0,0,0,.8))}
 .slide .w{display:block;height:100%;width:100%;max-width:none;object-fit:contain}
 .glint{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.62) 50%,transparent 58%) no-repeat;background-size:300% 100%;background-position:130% 0}
 @media(prefers-reduced-motion:no-preference){
   .slide.on .wwrap{animation:stageIn .9s cubic-bezier(.16,.8,.24,1) both,breathe 6s ease-in-out .9s infinite alternate}
   .slide.on .glint{animation:sweep 5.2s ease-in-out .7s infinite}
-  .slide.on .ghost{animation:drift 7s ease-out both}
+  .slide.on .ghost{animation:fadeIn .9s ease-out both}
   .slide.on .cap>*{animation:capUp .7s cubic-bezier(.16,.8,.24,1) .25s both}
   .slide.on .cap>.price{animation-delay:.4s}
   .tilt.in{animation:viewIn .55s cubic-bezier(.16,.8,.24,1) both}
@@ -129,8 +136,8 @@ img{display:block;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:
 /* one piece */
 .view{position:fixed;top:0;right:0;bottom:0;left:0;z-index:20;background:var(--ink);display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);overflow:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 .view .pic{position:relative;overflow:hidden;min-height:0;touch-action:pan-y}
-.view .pic .ghost{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(70px,13vw,190px);line-height:.9;color:transparent;-webkit-text-stroke:1px rgba(224,54,60,.5);white-space:nowrap;pointer-events:none}
-.view .pic .halo{position:absolute;left:50%;top:50%;width:90%;aspect-ratio:1;transform:translate(-50%,-50%);background:radial-gradient(closest-side,var(--glow),transparent)}
+.view .pic .ghost{top:50%;font-size:clamp(80px,13vw,190px)}
+.view .pic .halo{position:absolute;left:50%;top:50%;width:92%;height:0;padding-top:92%;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(255,255,255,.18),rgba(224,54,60,.06) 55%,transparent)}
 .view .pic img{position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;height:100%;width:100%;object-fit:contain}
 .view .pic img.zoom{height:190%;width:190%;left:-45%;top:-45%;object-fit:contain}
 @keyframes in{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
@@ -253,6 +260,7 @@ let hidden = new Set(), chains = [], db=null, assets=null, user=null, canEdit=fa
 const FILTERS = [['all','All'],['new','Just in'],['big','40mm and up'],['gold','Solid gold'],['ice','Diamonds'],['sport','Sport'],['dj','Datejust'],['other','Patek, AP, Cartier'],['her','For her']];
 
 const P = n => showPrice ? money(n) : '';
+const ghost = w => { const t=esc(w.nick||w.model), one=`<span>${t}<em></em></span>`; return `<div class="ghost" aria-hidden="true"><div class="run" style="--s:${Math.max(30,(w.nick||w.model).length*4.5)}s">${one.repeat(6)}</div></div>`; };
 const tile = w => `<div class="tile"><span>${esc(w.brand)}</span><b>${esc(w.ref)}</b></div>`;
 const live = () => W.filter(w=>!hidden.has(w.id));
 function match(w){
@@ -264,7 +272,7 @@ function match(w){
 function renderPr(){ $('#prBtn').textContent = showPrice ? 'Hide prices' : 'Show prices'; }
 function renderReel(){
   const items = D.featured.map(i=>byId[i]).filter(w=>w&&!hidden.has(w.id));
-  $('#reel').innerHTML = items.map(w=>`<button class="slide" type="button" data-id="${w.id}"><div class="halo"></div><div class="ghost" style="font-size:min(17vw,calc(135vw / ${(w.nick||w.model).length}))">${esc(w.nick||w.model)}</div><div class="wwrap"><img class="w" src="${w.img}" alt="${esc(w.brand+' '+w.model)}" draggable="false"><div class="glint" style="--m:url('${w.img}')"></div></div><div class="cap gut"><div><h2>${esc(w.title)}</h2><p>${esc(w.detail)}</p></div><div class="price">${P(w.price)}</div></div></button>`).join('');
+  $('#reel').innerHTML = items.map(w=>`<button class="slide" type="button" data-id="${w.id}"><div class="halo"></div>${ghost(w)}<div class="wwrap"><img class="w" src="${w.img}" alt="${esc(w.brand+' '+w.model)}" draggable="false"><div class="glint" style="--m:url('${w.img}')"></div></div><div class="cap gut"><div><h2>${esc(w.title)}</h2><p>${esc(w.detail)}</p></div><div class="price">${P(w.price)}</div></div></button>`).join('');
   $('#dots').innerHTML = items.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('');
   watchReel();
 }
@@ -320,7 +328,7 @@ function renderView(){
   const w=byId[current]; if(!w){ $('#viewHost').innerHTML=''; return; }
   const i=order.indexOf(w), saved=list.includes(w.id), anim=animNext; animNext='';
   $('#viewHost').innerHTML = `<div class="view" role="dialog" aria-modal="true" aria-label="${esc(w.title)}">
-    <div class="pic" id="pic"><div class="halo"></div><div class="ghost" style="font-size:min(11vw,calc(78vw / ${(w.nick||w.model).length}))">${esc(w.nick||w.model)}</div>${w.img?`<div class="tilt ${anim}" id="tilt"><img id="big" src="${w.img}" alt="${esc(w.brand+' '+w.model)}" draggable="false"><div class="glint" style="--m:url('${w.img}')"></div></div>`:`<div class="bigref"><span>${esc(w.brand)}</span><b>${esc(w.ref)}</b><em>Ask to see this piece</em></div>`}
+    <div class="pic" id="pic"><div class="halo"></div>${ghost(w)}${w.img?`<div class="tilt ${anim}" id="tilt"><img id="big" src="${w.img}" alt="${esc(w.brand+' '+w.model)}" draggable="false"><div class="glint" style="--m:url('${w.img}')"></div></div>`:`<div class="bigref"><span>${esc(w.brand)}</span><b>${esc(w.ref)}</b><em>Ask to see this piece</em></div>`}
       <button class="close" type="button" id="vClose" aria-label="Back to all watches">×</button>
       <button class="step p" type="button" id="vPrev" aria-label="Previous watch">‹</button><button class="step n" type="button" id="vNext" aria-label="Next watch">›</button>
       <div class="pos">${i+1} of ${order.length}</div></div>
